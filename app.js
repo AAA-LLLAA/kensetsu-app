@@ -1,6 +1,3 @@
-## app.js（完全版・全部置き換え）
-
-```javascript id="masterapp"
 let history = JSON.parse(
   localStorage.getItem("history")
 ) || [];
@@ -37,7 +34,7 @@ const accounts = [
 
 ];
 
-/* AI用単語 */
+/* AI単語 */
 
 const subjects = [
   "完成工事代金",
@@ -65,73 +62,73 @@ const templates = [
 
 {
 
-category:"収益",
+  category:"収益",
 
-type:"single",
+  type:"single",
 
-text:(a,m)=>
-`${subjects[random(subjects)]} ${a.toLocaleString()}円 を ${m} で受け取った。`,
+  text:(a,m)=>
+  `${subjects[random(subjects)]} ${a.toLocaleString()}円 を ${m} で受け取った。`,
 
-debits:(m)=>[m],
+  debits:(m)=>[m],
 
-credits:["完成工事高"],
+  credits:["完成工事高"],
 
-explanation:
-"完成工事代金を受け取ったため、借方は受取方法、貸方は完成工事高となる。"
-
-},
-
-{
-
-category:"材料",
-
-type:"single",
-
-text:(a)=>
-`${materials[random(materials)]} ${a.toLocaleString()}円 を掛けで購入した。`,
-
-debits:()=>["材料貯蔵品"],
-
-credits:["買掛金"],
-
-explanation:
-"材料を掛けで購入したため、買掛金が発生する。"
+  explanation:
+  "完成工事代金を受け取ったため、貸方は完成工事高となる。"
 
 },
 
 {
 
-category:"進行基準",
+  category:"材料",
 
-type:"single",
+  type:"single",
 
-text:(a)=>
-`工事進行基準により ${a.toLocaleString()}円 の収益を計上した。`,
+  text:(a)=>
+  `${materials[random(materials)]} ${a.toLocaleString()}円 を掛けで購入した。`,
 
-debits:()=>["完成工事未収入金"],
+  debits:()=>["材料貯蔵品"],
 
-credits:["完成工事高"],
+  credits:["買掛金"],
 
-explanation:
-"工事進行基準では進捗に応じて完成工事高を計上する。"
+  explanation:
+  "材料を掛けで購入したため買掛金が発生する。"
 
 },
 
 {
 
-category:"原価",
+  category:"進行基準",
 
-type:"single",
+  type:"single",
 
-text:(a)=>
-`完成工事に対応する工事原価 ${a.toLocaleString()}円 を振り替えた。`,
+  text:(a)=>
+  `工事進行基準により ${a.toLocaleString()}円 の収益を計上した。`,
 
-debits:()=>["完成工事原価"],
+  debits:()=>["完成工事未収入金"],
 
-credits:["未成工事支出金"],
+  credits:["完成工事高"],
 
-explanation:
-"完成した工事に対応する原価を費用へ振り替える。"
+  explanation:
+  "工事進行基準では進捗に応じて収益計上する。"
+
+},
+
+{
+
+  category:"原価",
+
+  type:"single",
+
+  text:(a)=>
+  `完成工事に対応する工事原価 ${a.toLocaleString()}円 を振り替えた。`,
+
+  debits:()=>["完成工事原価"],
+
+  credits:["未成工事支出金"],
+
+  explanation:
+  "完成した工事に対応する原価を費用化する。"
 
 },
 
@@ -139,58 +136,58 @@ explanation:
 
 {
 
-category:"複合",
+  category:"複合",
 
-type:"multi",
+  type:"multi",
 
-text:(a,b)=>
-`${materials[random(materials)]} ${a.toLocaleString()}円 を掛けで購入し、
-運搬費 ${b.toLocaleString()}円 を現金で支払った。`,
+  text:(a,b)=>
+  `${materials[random(materials)]} ${a.toLocaleString()}円 を掛けで購入し、
+  運搬費 ${b.toLocaleString()}円 を現金で支払った。`,
 
-debits:()=>["材料貯蔵品","通信費"],
+  debits:()=>["材料貯蔵品","通信費"],
 
-credits:["買掛金","現金"],
+  credits:["買掛金","現金"],
 
-explanation:
-"材料購入と運搬費支払を同時に処理する複合仕訳。"
-
-},
-
-{
-
-category:"複合",
-
-type:"multi",
-
-text:(a,b)=>
-`工事未払金 ${a.toLocaleString()}円 を当座預金で支払い、
-手数料 ${b.toLocaleString()}円 を現金で支払った。`,
-
-debits:()=>["工事未払金","通信費"],
-
-credits:["当座預金","現金"],
-
-explanation:
-"工事未払金支払と手数料支払を同時に処理する。"
+  explanation:
+  "材料購入と運搬費支払を同時に処理する複合仕訳。"
 
 },
 
 {
 
-category:"複合",
+  category:"複合",
 
-type:"multi",
+  type:"multi",
 
-text:(a,b)=>
-`工事用消耗品 ${a.toLocaleString()}円 を現金で購入し、
-水道光熱費 ${b.toLocaleString()}円 を普通預金から支払った。`,
+  text:(a,b)=>
+  `工事未払金 ${a.toLocaleString()}円 を当座預金で支払い、
+  手数料 ${b.toLocaleString()}円 を現金で支払った。`,
 
-debits:()=>["消耗品費","水道光熱費"],
+  debits:()=>["工事未払金","通信費"],
 
-credits:["現金","普通預金"],
+  credits:["当座預金","現金"],
 
-explanation:
-"費用を複数同時に処理する複合仕訳。"
+  explanation:
+  "工事未払金支払と手数料支払を同時処理する。"
+
+},
+
+{
+
+  category:"複合",
+
+  type:"multi",
+
+  text:(a,b)=>
+  `工事用消耗品 ${a.toLocaleString()}円 を現金で購入し、
+  水道光熱費 ${b.toLocaleString()}円 を普通預金から支払った。`,
+
+  debits:()=>["消耗品費","水道光熱費"],
+
+  credits:["現金","普通預金"],
+
+  explanation:
+  "複数費用を同時に処理する複合仕訳。"
 
 }
 
@@ -235,9 +232,21 @@ function generateQuestions(num){
       random(methods)
     ];
 
+    let text = "";
+
+    if(t.type === "single"){
+
+      text = t.text(a,method);
+
+    }else{
+
+      text = t.text(a,b);
+
+    }
+
     result.push({
 
-      text:t.text(a,b,method),
+      text:text,
 
       debits:t.debits(method),
 
@@ -255,14 +264,13 @@ function generateQuestions(num){
 
 }
 
-/* 苦手モード */
+/* 出題 */
 
 const selected =
 
 wrongQuestions.length >= 10
 
-? wrongQuestions
-.slice(0,10)
+? wrongQuestions.slice(0,10)
 
 : generateQuestions(10);
 
@@ -387,24 +395,16 @@ function check(){
   selected.forEach((q,i)=>{
 
     const d1 =
-    document.getElementById(
-      `d1-${i}`
-    ).value;
+    document.getElementById(`d1-${i}`).value;
 
     const d2 =
-    document.getElementById(
-      `d2-${i}`
-    ).value;
+    document.getElementById(`d2-${i}`).value;
 
     const c1 =
-    document.getElementById(
-      `c1-${i}`
-    ).value;
+    document.getElementById(`c1-${i}`).value;
 
     const c2 =
-    document.getElementById(
-      `c2-${i}`
-    ).value;
+    document.getElementById(`c2-${i}`).value;
 
     const debitAnswers =
     [d1,d2].filter(v=>v);
@@ -496,6 +496,8 @@ function check(){
     }
 
   });
+
+  /* 保存 */
 
   localStorage.setItem(
     "history",
@@ -603,4 +605,3 @@ function nextQuiz(){
   location.reload();
 
 }
-```
