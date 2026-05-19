@@ -30,7 +30,7 @@ const accounts = [
 
 ];
 
-/* AI単語 */
+/* AI用単語 */
 
 const subjects = [
   "完成工事代金",
@@ -48,13 +48,6 @@ const materials = [
   "工事用材料",
   "現場材料",
   "工事現場で使用する材料"
-];
-
-const expenses = [
-  "通信費",
-  "旅費交通費",
-  "消耗品費",
-  "水道光熱費"
 ];
 
 /* テンプレ */
@@ -122,7 +115,8 @@ credits:["未成工事支出金"]
 type:"multi",
 
 text:(a,b)=>
-`${materials[random(materials)]} ${a.toLocaleString()}円 を掛けで購入し、運搬費 ${b.toLocaleString()}円 を現金で支払った。`,
+`${materials[random(materials)]} ${a.toLocaleString()}円 を掛けで購入し、
+運搬費 ${b.toLocaleString()}円 を現金で支払った。`,
 
 debits:()=>["材料貯蔵品","通信費"],
 
@@ -135,7 +129,8 @@ credits:["買掛金","現金"]
 type:"multi",
 
 text:(a,b)=>
-`工事未払金 ${a.toLocaleString()}円 を当座預金で支払い、手数料 ${b.toLocaleString()}円 を現金で支払った。`,
+`工事未払金 ${a.toLocaleString()}円 を当座預金で支払い、
+手数料 ${b.toLocaleString()}円 を現金で支払った。`,
 
 debits:()=>["工事未払金","通信費"],
 
@@ -148,7 +143,8 @@ credits:["当座預金","現金"]
 type:"multi",
 
 text:(a,b)=>
-`工事用消耗品 ${a.toLocaleString()}円 を現金で購入し、水道光熱費 ${b.toLocaleString()}円 を普通預金から支払った。`,
+`工事用消耗品 ${a.toLocaleString()}円 を現金で購入し、
+水道光熱費 ${b.toLocaleString()}円 を普通預金から支払った。`,
 
 debits:()=>["消耗品費","水道光熱費"],
 
@@ -176,7 +172,7 @@ function randomAmount(){
 
 }
 
-/* AI問題生成 */
+/* 問題生成 */
 
 function generateQuestions(num){
 
@@ -218,7 +214,7 @@ function generateQuestions(num){
 const selected =
 generateQuestions(10);
 
-/* 問題表示 */
+/* 表示 */
 
 const quiz =
 document.getElementById("quiz");
@@ -242,49 +238,85 @@ selected.forEach((q,i)=>{
 
     </p>
 
-    <label>借方①</label>
+    <div class="journal-row">
 
-    <select id="d1-${i}">
-      <option value="">選択してください</option>
+      <div class="journal-side">
 
-      ${accounts.map(a=>
-      `<option>${a}</option>`
-      ).join("")}
+        <label>借方①</label>
 
-    </select>
+        <select id="d1-${i}">
 
-    <label>借方②</label>
+          <option value="">
+          選択してください
+          </option>
 
-    <select id="d2-${i}">
-      <option value="">選択してください</option>
+          ${accounts.map(a=>
+          `<option>${a}</option>`
+          ).join("")}
 
-      ${accounts.map(a=>
-      `<option>${a}</option>`
-      ).join("")}
+        </select>
 
-    </select>
+      </div>
 
-    <label>貸方①</label>
+      <div class="journal-side">
 
-    <select id="c1-${i}">
-      <option value="">選択してください</option>
+        <label>貸方①</label>
 
-      ${accounts.map(a=>
-      `<option>${a}</option>`
-      ).join("")}
+        <select id="c1-${i}">
 
-    </select>
+          <option value="">
+          選択してください
+          </option>
 
-    <label>貸方②</label>
+          ${accounts.map(a=>
+          `<option>${a}</option>`
+          ).join("")}
 
-    <select id="c2-${i}">
-      <option value="">選択してください</option>
+        </select>
 
-      ${accounts.map(a=>
-      `<option>${a}</option>`
-      ).join("")}
+      </div>
 
-    </select>
+    </div>
+
+    <div class="journal-row">
+
+      <div class="journal-side">
+
+        <label>借方②</label>
+
+        <select id="d2-${i}">
+
+          <option value="">
+          選択してください
+          </option>
+
+          ${accounts.map(a=>
+          `<option>${a}</option>`
+          ).join("")}
+
+        </select>
+
+      </div>
+
+      <div class="journal-side">
+
+        <label>貸方②</label>
+
+        <select id="c2-${i}">
+
+          <option value="">
+          選択してください
+          </option>
+
+          ${accounts.map(a=>
+          `<option>${a}</option>`
+          ).join("")}
+
+        </select>
+
+      </div>
+
+    </div>
 
     <div id="r${i}"></div>
 
@@ -342,8 +374,6 @@ function check(){
     debitCorrect &&
     creditCorrect;
 
-    /* 履歴 */
-
     history.push({
 
       question:q.text,
@@ -391,14 +421,10 @@ function check(){
 
   });
 
-  /* 保存 */
-
   localStorage.setItem(
     "history",
     JSON.stringify(history)
   );
-
-  /* 正答率 */
 
   const wrong =
   history.filter(
