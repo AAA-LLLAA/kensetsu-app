@@ -25,113 +25,148 @@ const accounts = [
   "租税公課",
   "通信費",
   "旅費交通費",
-  "水道光熱費"
+  "水道光熱費",
+  "消耗品費"
 
 ];
 
-/* 問題用単語 */
+/* AI単語 */
 
 const subjects = [
-  "完成した工事代金",
+  "完成工事代金",
   "請負工事代金",
-  "完成工事代金"
+  "完成した工事代金"
 ];
 
-const receiveMethods = [
+const methods = [
   "現金",
-  "当座預金"
+  "当座預金",
+  "普通預金"
 ];
 
-const materialTargets = [
-  "工事現場で使用する材料",
+const materials = [
   "工事用材料",
-  "現場材料"
+  "現場材料",
+  "工事現場で使用する材料"
 ];
 
-/* AI風テンプレ */
+const expenses = [
+  "通信費",
+  "旅費交通費",
+  "消耗品費",
+  "水道光熱費"
+];
+
+/* テンプレ */
 
 const templates = [
 
+/* 単一仕訳 */
+
 {
-  type:"receive",
 
-  text:(a,m)=>
-  `${subjects[Math.floor(Math.random()*subjects.length)]} ${a.toLocaleString()}円 を ${m} で受け取った。`,
+type:"single",
 
-  debit:(m)=>m,
+text:(a,m)=>
+`${subjects[random(subjects)]} ${a.toLocaleString()}円 を ${m} で受け取った。`,
 
-  credit:"完成工事高"
+debits:(m)=>[m],
+
+credits:["完成工事高"]
+
 },
 
 {
-  type:"material",
 
-  text:(a)=>
-  `${materialTargets[Math.floor(Math.random()*materialTargets.length)]} ${a.toLocaleString()}円 を掛けで購入した。`,
+type:"single",
 
-  debit:"材料貯蔵品",
+text:(a)=>
+`${materials[random(materials)]} ${a.toLocaleString()}円 を掛けで購入した。`,
 
-  credit:"買掛金"
+debits:()=>["材料貯蔵品"],
+
+credits:["買掛金"]
+
 },
 
 {
-  type:"progress",
 
-  text:(a)=>
-  `工事進行基準により ${a.toLocaleString()}円 の収益を計上した。`,
+type:"single",
 
-  debit:"完成工事未収入金",
+text:(a)=>
+`工事進行基準により ${a.toLocaleString()}円 の収益を計上した。`,
 
-  credit:"完成工事高"
+debits:()=>["完成工事未収入金"],
+
+credits:["完成工事高"]
+
 },
 
 {
-  type:"cost",
 
-  text:(a)=>
-  `完成工事に対応する工事原価 ${a.toLocaleString()}円 を振り替えた。`,
+type:"single",
 
-  debit:"完成工事原価",
+text:(a)=>
+`完成工事に対応する工事原価 ${a.toLocaleString()}円 を振り替えた。`,
 
-  credit:"未成工事支出金"
+debits:()=>["完成工事原価"],
+
+credits:["未成工事支出金"]
+
+},
+
+/* 複合仕訳 */
+
+{
+
+type:"multi",
+
+text:(a,b)=>
+`${materials[random(materials)]} ${a.toLocaleString()}円 を掛けで購入し、運搬費 ${b.toLocaleString()}円 を現金で支払った。`,
+
+debits:()=>["材料貯蔵品","通信費"],
+
+credits:["買掛金","現金"]
+
 },
 
 {
-  type:"advance",
 
-  text:(a)=>
-  `工事着手前に前受金 ${a.toLocaleString()}円 を受け取った。`,
+type:"multi",
 
-  debit:"現金",
+text:(a,b)=>
+`工事未払金 ${a.toLocaleString()}円 を当座預金で支払い、手数料 ${b.toLocaleString()}円 を現金で支払った。`,
 
-  credit:"未成工事受入金"
+debits:()=>["工事未払金","通信費"],
+
+credits:["当座預金","現金"]
+
 },
 
 {
-  type:"payment",
 
-  text:(a)=>
-  `工事未払金 ${a.toLocaleString()}円 を当座預金から支払った。`,
+type:"multi",
 
-  debit:"工事未払金",
+text:(a,b)=>
+`工事用消耗品 ${a.toLocaleString()}円 を現金で購入し、水道光熱費 ${b.toLocaleString()}円 を普通預金から支払った。`,
 
-  credit:"当座預金"
-},
+debits:()=>["消耗品費","水道光熱費"],
 
-{
-  type:"depreciation",
+credits:["現金","普通預金"]
 
-  text:(a)=>
-  `工事用機械の減価償却費 ${a.toLocaleString()}円 を計上した。`,
-
-  debit:"減価償却費",
-
-  credit:"機械装置"
 }
 
 ];
 
-/* ランダム金額 */
+/* ランダム */
+
+function random(arr){
+
+  return Math.floor(
+    Math.random()*arr.length
+  );
+
+}
 
 function randomAmount(){
 
@@ -149,44 +184,28 @@ function generateQuestions(num){
 
   for(let i=0;i<num;i++){
 
-    const t = templates[
-      Math.floor(Math.random()*templates.length)
+    const t =
+    templates[
+      random(templates)
     ];
 
-    const amount = randomAmount();
+    const a = randomAmount();
+    const b = randomAmount();
 
-    if(t.type === "receive"){
+    const method =
+    methods[
+      random(methods)
+    ];
 
-      const method =
-      receiveMethods[
-        Math.floor(
-          Math.random()*receiveMethods.length
-        )
-      ];
+    result.push({
 
-      result.push({
+      text:t.text(a,b,method),
 
-        text:t.text(amount,method),
+      debits:t.debits(method),
 
-        debit:t.debit(method),
+      credits:t.credits
 
-        credit:t.credit
-
-      });
-
-    }else{
-
-      result.push({
-
-        text:t.text(amount),
-
-        debit:t.debit,
-
-        credit:t.credit
-
-      });
-
-    }
+    });
 
   }
 
@@ -196,7 +215,8 @@ function generateQuestions(num){
 
 /* 10問生成 */
 
-const selected = generateQuestions(10);
+const selected =
+generateQuestions(10);
 
 /* 問題表示 */
 
@@ -212,16 +232,19 @@ selected.forEach((q,i)=>{
     <h3>第${i+1}問</h3>
 
     <p>
+
       次の取引について
-      最も適当な勘定科目を選択しなさい。<br><br>
+      最も適当な勘定科目を選択しなさい。
+
+      <br><br>
 
       ${q.text}
+
     </p>
 
-    <label>借方</label>
+    <label>借方①</label>
 
-    <select id="d${i}">
-
+    <select id="d1-${i}">
       <option value="">選択してください</option>
 
       ${accounts.map(a=>
@@ -230,10 +253,31 @@ selected.forEach((q,i)=>{
 
     </select>
 
-    <label>貸方</label>
+    <label>借方②</label>
 
-    <select id="c${i}">
+    <select id="d2-${i}">
+      <option value="">選択してください</option>
 
+      ${accounts.map(a=>
+      `<option>${a}</option>`
+      ).join("")}
+
+    </select>
+
+    <label>貸方①</label>
+
+    <select id="c1-${i}">
+      <option value="">選択してください</option>
+
+      ${accounts.map(a=>
+      `<option>${a}</option>`
+      ).join("")}
+
+    </select>
+
+    <label>貸方②</label>
+
+    <select id="c2-${i}">
       <option value="">選択してください</option>
 
       ${accounts.map(a=>
@@ -258,20 +302,47 @@ function check(){
 
   selected.forEach((q,i)=>{
 
-    const d =
+    const d1 =
     document.getElementById(
-      "d"+i
+      `d1-${i}`
     ).value;
 
-    const c =
+    const d2 =
     document.getElementById(
-      "c"+i
+      `d2-${i}`
     ).value;
+
+    const c1 =
+    document.getElementById(
+      `c1-${i}`
+    ).value;
+
+    const c2 =
+    document.getElementById(
+      `c2-${i}`
+    ).value;
+
+    const debitAnswers =
+    [d1,d2].filter(v=>v);
+
+    const creditAnswers =
+    [c1,c2].filter(v=>v);
+
+    const debitCorrect =
+    q.debits.every(v=>
+      debitAnswers.includes(v)
+    );
+
+    const creditCorrect =
+    q.credits.every(v=>
+      creditAnswers.includes(v)
+    );
 
     const correct =
-    (d===q.debit && c===q.credit);
+    debitCorrect &&
+    creditCorrect;
 
-    /* 履歴保存 */
+    /* 履歴 */
 
     history.push({
 
@@ -289,7 +360,7 @@ function check(){
       score++;
 
       document.getElementById(
-        "r"+i
+        `r${i}`
       ).innerHTML =
 
       `<div class="correct">
@@ -299,14 +370,21 @@ function check(){
     }else{
 
       document.getElementById(
-        "r"+i
+        `r${i}`
       ).innerHTML =
 
       `<div class="wrong">
-      ❌ 正解：
-      ${q.debit}
-      ／
-      ${q.credit}
+
+      ❌ 正解<br><br>
+
+      借方：
+      ${q.debits.join(" ・ ")}
+
+      <br><br>
+
+      貸方：
+      ${q.credits.join(" ・ ")}
+
       </div>`;
 
     }
