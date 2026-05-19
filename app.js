@@ -1,5 +1,12 @@
+## app.js（完全版・全部置き換え）
+
+```javascript id="masterapp"
 let history = JSON.parse(
   localStorage.getItem("history")
+) || [];
+
+let wrongQuestions = JSON.parse(
+  localStorage.getItem("wrongQuestions")
 ) || [];
 
 /* 勘定科目 */
@@ -58,6 +65,8 @@ const templates = [
 
 {
 
+category:"収益",
+
 type:"single",
 
 text:(a,m)=>
@@ -65,11 +74,16 @@ text:(a,m)=>
 
 debits:(m)=>[m],
 
-credits:["完成工事高"]
+credits:["完成工事高"],
+
+explanation:
+"完成工事代金を受け取ったため、借方は受取方法、貸方は完成工事高となる。"
 
 },
 
 {
+
+category:"材料",
 
 type:"single",
 
@@ -78,11 +92,16 @@ text:(a)=>
 
 debits:()=>["材料貯蔵品"],
 
-credits:["買掛金"]
+credits:["買掛金"],
+
+explanation:
+"材料を掛けで購入したため、買掛金が発生する。"
 
 },
 
 {
+
+category:"進行基準",
 
 type:"single",
 
@@ -91,11 +110,16 @@ text:(a)=>
 
 debits:()=>["完成工事未収入金"],
 
-credits:["完成工事高"]
+credits:["完成工事高"],
+
+explanation:
+"工事進行基準では進捗に応じて完成工事高を計上する。"
 
 },
 
 {
+
+category:"原価",
 
 type:"single",
 
@@ -104,13 +128,18 @@ text:(a)=>
 
 debits:()=>["完成工事原価"],
 
-credits:["未成工事支出金"]
+credits:["未成工事支出金"],
+
+explanation:
+"完成した工事に対応する原価を費用へ振り替える。"
 
 },
 
 /* 複合仕訳 */
 
 {
+
+category:"複合",
 
 type:"multi",
 
@@ -120,11 +149,16 @@ text:(a,b)=>
 
 debits:()=>["材料貯蔵品","通信費"],
 
-credits:["買掛金","現金"]
+credits:["買掛金","現金"],
+
+explanation:
+"材料購入と運搬費支払を同時に処理する複合仕訳。"
 
 },
 
 {
+
+category:"複合",
 
 type:"multi",
 
@@ -134,11 +168,16 @@ text:(a,b)=>
 
 debits:()=>["工事未払金","通信費"],
 
-credits:["当座預金","現金"]
+credits:["当座預金","現金"],
+
+explanation:
+"工事未払金支払と手数料支払を同時に処理する。"
 
 },
 
 {
+
+category:"複合",
 
 type:"multi",
 
@@ -148,7 +187,10 @@ text:(a,b)=>
 
 debits:()=>["消耗品費","水道光熱費"],
 
-credits:["現金","普通預金"]
+credits:["現金","普通預金"],
+
+explanation:
+"費用を複数同時に処理する複合仕訳。"
 
 }
 
@@ -199,7 +241,11 @@ function generateQuestions(num){
 
       debits:t.debits(method),
 
-      credits:t.credits
+      credits:t.credits,
+
+      explanation:t.explanation,
+
+      category:t.category
 
     });
 
@@ -209,10 +255,16 @@ function generateQuestions(num){
 
 }
 
-/* 10問生成 */
+/* 苦手モード */
 
 const selected =
-generateQuestions(10);
+
+wrongQuestions.length >= 10
+
+? wrongQuestions
+.slice(0,10)
+
+: generateQuestions(10);
 
 /* 表示 */
 
@@ -374,9 +426,13 @@ function check(){
     debitCorrect &&
     creditCorrect;
 
+    /* 履歴 */
+
     history.push({
 
       question:q.text,
+
+      category:q.category,
 
       correct:correct,
 
@@ -384,6 +440,14 @@ function check(){
       .toLocaleString()
 
     });
+
+    /* 苦手保存 */
+
+    if(!correct){
+
+      wrongQuestions.push(q);
+
+    }
 
     if(correct){
 
@@ -394,7 +458,14 @@ function check(){
       ).innerHTML =
 
       `<div class="correct">
+
       ⭕ 正解
+
+      <br><br>
+
+      💡 解説<br>
+      ${q.explanation}
+
       </div>`;
 
     }else{
@@ -415,6 +486,11 @@ function check(){
       貸方：
       ${q.credits.join(" ・ ")}
 
+      <br><br>
+
+      💡 解説<br>
+      ${q.explanation}
+
       </div>`;
 
     }
@@ -425,6 +501,13 @@ function check(){
     "history",
     JSON.stringify(history)
   );
+
+  localStorage.setItem(
+    "wrongQuestions",
+    JSON.stringify(wrongQuestions)
+  );
+
+  /* 正答率 */
 
   const wrong =
   history.filter(
@@ -440,6 +523,52 @@ function check(){
     history.length
     *100
   ).toFixed(1);
+
+  /* 苦手分析 */
+
+  const categories = {};
+
+  history.forEach(h=>{
+
+    if(!categories[h.category]){
+
+      categories[h.category] = {
+        total:0,
+        correct:0
+      };
+
+    }
+
+    categories[h.category].total++;
+
+    if(h.correct){
+
+      categories[h.category].correct++;
+
+    }
+
+  });
+
+  let analysis = "";
+
+  for(let key in categories){
+
+    const c = categories[key];
+
+    const r =
+    (
+      c.correct
+      /
+      c.total
+      *100
+    ).toFixed(1);
+
+    analysis += `
+    ${key}：
+    ${r}%<br>
+    `;
+
+  }
 
   document.getElementById(
     "score"
@@ -457,6 +586,12 @@ function check(){
 
   累計正答率：
   ${rate}%
+
+  <hr>
+
+  <h3>苦手分析</h3>
+
+  ${analysis}
   `;
 
 }
@@ -468,3 +603,4 @@ function nextQuiz(){
   location.reload();
 
 }
+```
