@@ -1,5 +1,9 @@
 {
   "name": "建設業経理士2級",
+  "short_name": "建設業経理士",
   "start_url": ".",
-  "display": "standalone"
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1f3c5b",
+  "orientation": "portrait"
 }

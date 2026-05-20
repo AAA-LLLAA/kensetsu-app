@@ -38,8 +38,6 @@ body{
 
   color:#1f3c5b;
 
-  backdrop-filter:blur(8px);
-
 }
 
 /* 勘定科目群 */
@@ -67,6 +65,12 @@ body{
 
   line-height:1.4;
 
+  overflow:hidden;
+
+  text-overflow:ellipsis;
+
+  white-space:nowrap;
+
 }
 
 /* コンテンツ */
@@ -79,11 +83,11 @@ body{
 
   padding:16px;
 
-  padding-top:20px;
-
   padding-bottom:140px;
 
 }
+
+/* タイトル */
 
 h1{
 
@@ -150,7 +154,7 @@ h1{
 
 }
 
-/* アルファベット */
+/* アルファベット入力 */
 
 .answer-row input[type="text"]{
 
@@ -170,7 +174,7 @@ h1{
 
 }
 
-/* 金額 */
+/* 金額入力 */
 
 .answer-row input[type="number"]{
 
@@ -188,7 +192,7 @@ h1{
 
 }
 
-/* 下固定 */
+/* 下固定バー */
 
 .bottom-bar{
 
@@ -322,15 +326,5 @@ h1{
     width:90px;
 
   }
-
-}
-
-.account-item{
-
-  overflow:hidden;
-
-  text-overflow:ellipsis;
-
-  white-space:nowrap;
 
 }
