@@ -1,117 +1,53 @@
+window.onload = function(){
+
+/* =========================
+   勘定科目
+========================= */
+
 const accounts = [
 
 "現金",
-"小口現金",
 "当座預金",
 "普通預金",
-"通知預金",
-"定期預金",
-"別段預金",
-"受取手形",
 "完成工事未収入金",
-"有価証券",
 "未成工事支出金",
 "材料",
-"貯蔵品",
-"前渡金",
-"貸付金",
-"手形貸付金",
-"前払保険料",
-"前払地代",
-"前払家賃",
-"前払利息",
-"未収家賃",
-"未収利息",
-"未収手数料",
-"営業外受取手形",
-"未収入金",
-"立替金",
-"仮払金",
-"仮払法人税等",
-"仮払消費税",
-"未収消費税",
-"貸倒引当金",
-"建物",
-"構築物",
-"機械装置",
-"船舶",
-"車両運搬具",
-"工具器具",
-"備品",
-"減価償却累計額",
-"土地",
-"建設仮勘定",
-"のれん",
-"特許権",
-"借地権",
-"実用新案権",
-"電話加入権",
-"施設利用権",
-"投資有価証券",
-"出資金",
-"長期貸付金",
-"破産債権、更生債権等",
-"不渡手形",
-"長期前払費用",
-"差入保証金",
-"差入有価証券",
-"株式交付費",
-"社債発行費",
-"支払手形",
 "工事未払金",
-"借入金",
-"手形借入金",
-"当座借越",
-"未払金",
-"未払地代",
-"未払家賃",
-"未払利息",
-"未払配当金",
-"未払法人税等",
 "未成工事受入金",
-"預り金",
-"前受家賃",
-"前受地代",
-"前受利息",
-"仮受金",
-"仮受消費税",
-"未払消費税",
-"賞与引当金",
-"修繕引当金",
-"完成工事補償引当金",
-"営業外支払手形",
-"社債",
-"長期借入金",
-"長期未払金",
-"退職給付引当金",
-"保証債務",
-"資本金",
-"受取利息",
 "完成工事高",
-"受取配当金",
-"雑収入",
 "完成工事原価",
-"給料手当",
-"法定福利費",
-"福利厚生費",
 "通信費",
 "旅費交通費",
 "水道光熱費",
-"交際費",
-"支払家賃",
-"減価償却費",
 "租税公課",
+"支払利息",
+"受取配当金",
+"広告宣伝費",
+"社債",
+"当座借越",
+"有価証券",
+"営業外受取手形",
+"営業外支払手形",
+"未払法人税等",
+"預り金",
+"土地",
+"支払手数料",
+"社債発行費",
+"仮払金",
+"未払金",
+"減価償却費",
 "保険料",
 "雑費",
-"支払利息",
-"材料費",
 "労務費",
 "外注費",
+"材料費",
 "経費"
 
 ];
 
-/* ランダム */
+/* =========================
+   ランダム
+========================= */
 
 function rand(max){
 
@@ -129,7 +65,9 @@ function amount(){
 
 }
 
-/* 問題テンプレ */
+/* =========================
+   問題テンプレ
+========================= */
 
 const templates = [
 
@@ -201,77 +139,13 @@ credit:[
 explanation:
 "材料購入と運搬費支払の複合仕訳。"
 
-},
-
-{
-
-text:(a,b)=>
-`社債
-${a.toLocaleString()}円を
-発行し、
-発行費
-${b.toLocaleString()}円を
-現金で支払った。`,
-
-debit:[
-  {
-    account:"現金",
-    amount:a-b
-  },
-  {
-    account:"社債発行費",
-    amount:b
-  }
-],
-
-credit:[
-  {
-    account:"社債",
-    amount:a
-  }
-],
-
-explanation:
-"社債発行費は区分処理する。"
-
-},
-
-{
-
-text:(a,b)=>
-`営業用車両を
-${a.toLocaleString()}円で購入し、
-代金のうち
-${b.toLocaleString()}円は
-現金で支払い、
-残額は未払金とした。`,
-
-debit:[
-  {
-    account:"車両運搬具",
-    amount:a
-  }
-],
-
-credit:[
-  {
-    account:"現金",
-    amount:b
-  },
-  {
-    account:"未払金",
-    amount:a-b
-  }
-],
-
-explanation:
-"固定資産購入時の複合仕訳。"
-
 }
 
 ];
 
-/* 問題生成 */
+/* =========================
+   問題生成
+========================= */
 
 const questions = [];
 
@@ -301,7 +175,9 @@ for(let i=0;i<5;i++){
 
 }
 
-/* 必須勘定抽出 */
+/* =========================
+   必須勘定
+========================= */
 
 let required = [];
 
@@ -328,7 +204,9 @@ questions.forEach(q=>{
 required =
 [...new Set(required)];
 
-/* 24科目までランダム */
+/* =========================
+   24科目
+========================= */
 
 while(required.length < 24){
 
@@ -345,17 +223,26 @@ while(required.length < 24){
 
 }
 
-/* シャッフル */
+/* =========================
+   シャッフル
+========================= */
 
 required.sort(
 ()=>Math.random()-0.5
 );
 
-/* A〜X */
+/* =========================
+   A〜X
+========================= */
 
-const letters =
-"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-.split("");
+const letters = [
+
+"A","B","C","D","E","F",
+"G","H","I","J","K","L",
+"M","N","O","P","Q","R",
+"S","T","U","V","W","X"
+
+];
 
 const mapping = {};
 
@@ -367,7 +254,9 @@ required.forEach((a,i)=>{
 
 });
 
-/* 勘定科目表示 */
+/* =========================
+   勘定科目表示
+========================= */
 
 const accountList =
 document.getElementById(
@@ -390,7 +279,9 @@ required.forEach((a,i)=>{
 
 });
 
-/* 問題表示 */
+/* =========================
+   問題表示
+========================= */
 
 const quiz =
 document.getElementById(
@@ -398,18 +289,6 @@ document.getElementById(
 );
 
 questions.forEach((q,i)=>{
-
-  const debit2 =
-  q.debit[1] || {
-    account:"",
-    amount:""
-  };
-
-  const credit2 =
-  q.credit[1] || {
-    account:"",
-    amount:""
-  };
 
   quiz.innerHTML += `
 
@@ -453,36 +332,6 @@ questions.forEach((q,i)=>{
 
     </div>
 
-    <div class="answer-row">
-
-      <span>借方</span>
-
-      <input
-      type="text"
-      maxlength="1"
-      id="d2-${i}"
-      >
-
-      <input
-      type="number"
-      id="da2-${i}"
-      >
-
-      <span>貸方</span>
-
-      <input
-      type="text"
-      maxlength="1"
-      id="c2-${i}"
-      >
-
-      <input
-      type="number"
-      id="ca2-${i}"
-      >
-
-    </div>
-
     <div id="r${i}"></div>
 
   </div>
@@ -491,24 +340,11 @@ questions.forEach((q,i)=>{
 
 });
 
-/* 判定 */
+/* =========================
+   採点
+========================= */
 
-function judge(letter,account){
-
-  if(account === ""){
-
-    return true;
-
-  }
-
-  return mapping[letter]
-  === account;
-
-}
-
-/* 採点 */
-
-function check(){
+window.check = function(){
 
   let score = 0;
 
@@ -520,21 +356,9 @@ function check(){
     .value
     .toUpperCase();
 
-    const d2 =
-    document
-    .getElementById(`d2-${i}`)
-    .value
-    .toUpperCase();
-
     const c1 =
     document
     .getElementById(`c1-${i}`)
-    .value
-    .toUpperCase();
-
-    const c2 =
-    document
-    .getElementById(`c2-${i}`)
     .value
     .toUpperCase();
 
@@ -545,13 +369,6 @@ function check(){
       .value
     );
 
-    const da2 =
-    Number(
-      document
-      .getElementById(`da2-${i}`)
-      .value
-    );
-
     const ca1 =
     Number(
       document
@@ -559,52 +376,17 @@ function check(){
       .value
     );
 
-    const ca2 =
-    Number(
-      document
-      .getElementById(`ca2-${i}`)
-      .value
-    );
-
-    const debit2 =
-    q.debit[1] || {
-      account:"",
-      amount:0
-    };
-
-    const credit2 =
-    q.credit[1] || {
-      account:"",
-      amount:0
-    };
-
     const correct =
 
-    judge(
-      d1,
-      q.debit[0].account
-    )
+    mapping[d1]
+    ===
+    q.debit[0].account
 
     &&
 
-    judge(
-      d2,
-      debit2.account
-    )
-
-    &&
-
-    judge(
-      c1,
-      q.credit[0].account
-    )
-
-    &&
-
-    judge(
-      c2,
-      credit2.account
-    )
+    mapping[c1]
+    ===
+    q.credit[0].account
 
     &&
 
@@ -614,21 +396,9 @@ function check(){
 
     &&
 
-    da2
-    ===
-    debit2.amount
-
-    &&
-
     ca1
     ===
-    q.credit[0].amount
-
-    &&
-
-    ca2
-    ===
-    credit2.amount;
+    q.credit[0].amount;
 
     if(correct){
 
@@ -661,22 +431,14 @@ function check(){
       <br><br>
 
       借方：
-      ${q.debit.map(v=>
-      `${v.account}
-      ${v.amount.toLocaleString()}`
-      ).join(" ／ ")}
+      ${q.debit[0].account}
+      ${q.debit[0].amount.toLocaleString()}
 
       <br><br>
 
       貸方：
-      ${q.credit.map(v=>
-      `${v.account}
-      ${v.amount.toLocaleString()}`
-      ).join(" ／ ")}
-
-      <br><br>
-
-      ${q.explanation}
+      ${q.credit[0].account}
+      ${q.credit[0].amount.toLocaleString()}
 
       </div>`;
 
@@ -688,15 +450,18 @@ function check(){
   .getElementById("score")
   .innerHTML =
 
-  `得点：
-  ${score}/5`;
+  `得点：${score}/5`;
 
 }
 
-/* 次の問題 */
+/* =========================
+   次の問題
+========================= */
 
-function nextQuiz(){
+window.nextQuiz = function(){
 
   location.reload();
+
+}
 
 }
