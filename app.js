@@ -1,17 +1,5 @@
 /* =========================
-   履歴
-========================= */
-
-let history = JSON.parse(
-  localStorage.getItem("history")
-) || [];
-
-let wrongQuestions = JSON.parse(
-  localStorage.getItem("wrongQuestions")
-) || [];
-
-/* =========================
-   勘定科目
+   200以上の勘定科目
 ========================= */
 
 const accounts = [
@@ -102,51 +90,110 @@ const accounts = [
 "退職給付引当金",
 "保証債務",
 "資本金",
+"事業主借勘定",
+"事業主貸勘定",
+"新株式申込証拠金",
+"資本剰余金",
+"資本準備金",
+"株式払込剰余金",
+"資本金減少差益",
+"合併差益",
+"利益剰余金",
+"利益準備金",
+"新築積立金",
+"配当平均積立金",
+"減債積立金",
+"別途積立金",
+"繰越利益剰余金",
 "受取利息",
+"受取地代",
 "完成工事高",
+"有価証券利息",
 "受取配当金",
+"受取家賃",
+"受取手数料",
+"有価証券売却益",
+"仕入割引",
 "雑収入",
+"償却債権取立益",
+"貸倒引当金戻入",
+"完成工事補償引当金戻入",
+"固定資産売却益",
+"投資有価証券売却益",
+"社債償還益",
+"保険差益",
+"保証債務取崩益",
 "完成工事原価",
+"役員報酬",
+"役員賞与",
 "給料手当",
+"賞与引当金繰入額",
+"退職金",
+"退職給付引当金繰入額",
 "法定福利費",
 "福利厚生費",
+"修繕維持費",
+"事務用消耗品費",
 "通信費",
 "旅費交通費",
 "水道光熱費",
+"調査研究費",
+"広告宣伝費",
+"貸倒引当金繰入額",
+"貸倒損失",
 "交際費",
+"寄付金",
+"支払地代",
 "支払家賃",
 "減価償却費",
 "租税公課",
 "保険料",
 "雑費",
 "支払利息",
+"社債利息",
+"社債発行費償却",
+"株式交付費償却",
+"有価証券売却損",
+"有価証券評価損",
+"手形売却損",
+"保証料",
+"売上割引",
+"材料評価損",
+"棚卸減耗損",
+"雑損失",
+"前期工事補償費",
+"固定資産売却損",
+"固定資産除却損",
+"投資有価証券売却損",
+"投資有価証券評価損",
+"社債償還損",
+"災害損失",
+"保証債務費用",
 "材料費",
 "労務費",
 "外注費",
-"経費"
+"経費",
+"仮設材料費",
+"人件費",
+"動力用水光熱費",
+"機械等経費",
+"設計費",
+"労務管理費",
+"地代家賃",
+"従業員給料手当",
+"事務用品費",
+"通信交通費",
+"補償費",
+"出張所等経費配賦額",
+"工事間接費",
+"施工部門費",
+"補助部門費",
+"仮設部門費",
+"機械部門費",
+"車両部門費",
+"工事間接費配賦差異",
+"部門費配賦差異"
 
-];
-
-/* =========================
-   AI用単語
-========================= */
-
-const subjects = [
-  "完成工事代金",
-  "請負工事代金",
-  "完成した工事代金"
-];
-
-const methods = [
-  "現金",
-  "当座預金",
-  "普通預金"
-];
-
-const materials = [
-  "工事用材料",
-  "現場材料",
-  "工事現場で使用する材料"
 ];
 
 /* =========================
@@ -157,85 +204,93 @@ const templates = [
 
 {
 
-category:"収益",
+text:(a,b)=>
+`完成工事に係る請負代金
+${a.toLocaleString()}円のうち、
+${b.toLocaleString()}円が
+当座預金口座へ振り込まれ、
+残額は完成工事未収入金
+とした。`,
 
-type:"single",
+debitAccounts:[
+"当座預金",
+"完成工事未収入金"
+],
 
-text:(a,m)=>
-`${subjects[random(subjects)]}
-${a.toLocaleString()}円 を
-${m} で受け取った。`,
+debitAmounts:(a,b)=>
+[b,a-b],
 
-debits:(m)=>[m],
+creditAccounts:[
+"完成工事高"
+],
 
-credits:["完成工事高"],
+creditAmounts:(a)=>
+[a],
 
 explanation:
-"完成工事代金を受け取ったため収益計上する。"
+"入金分は当座預金、
+残額は完成工事未収入金。"
 
 },
 
 {
-
-category:"材料",
-
-type:"single",
-
-text:(a)=>
-`${materials[random(materials)]}
-${a.toLocaleString()}円 を
-掛けで購入した。`,
-
-debits:()=>["材料"],
-
-credits:["工事未払金"],
-
-explanation:
-"掛け購入のため工事未払金が発生する。"
-
-},
-
-{
-
-category:"進行基準",
-
-type:"single",
-
-text:(a)=>
-`工事進行基準により
-${a.toLocaleString()}円 の
-収益を計上した。`,
-
-debits:()=>["完成工事未収入金"],
-
-credits:["完成工事高"],
-
-explanation:
-"工事進行基準では進捗に応じて収益計上する。"
-
-},
-
-{
-
-category:"複合",
-
-type:"multi",
 
 text:(a,b)=>
-`${materials[random(materials)]}
-${a.toLocaleString()}円 を
+`工事用材料
+${a.toLocaleString()}円を
 掛けで購入し、
-
 運搬費
-${b.toLocaleString()}円 を
+${b.toLocaleString()}円を
 現金で支払った。`,
 
-debits:()=>["材料","通信費"],
+debitAccounts:[
+"材料",
+"通信費"
+],
 
-credits:["工事未払金","現金"],
+debitAmounts:(a,b)=>
+[a,b],
+
+creditAccounts:[
+"工事未払金",
+"現金"
+],
+
+creditAmounts:(a,b)=>
+[a,b],
 
 explanation:
-"材料購入と運搬費支払を同時に処理する複合仕訳。"
+"材料購入と運搬費支払の複合仕訳。"
+
+},
+
+{
+
+text:(a,b)=>
+`社債
+${a.toLocaleString()}円を
+発行し、
+発行費
+${b.toLocaleString()}円を
+現金で支払った。`,
+
+debitAccounts:[
+"現金",
+"社債発行費"
+],
+
+debitAmounts:(a,b)=>
+[a-b,b],
+
+creditAccounts:[
+"社債"
+],
+
+creditAmounts:(a)=>
+[a],
+
+explanation:
+"社債発行費は区分処理する。"
 
 }
 
@@ -245,18 +300,18 @@ explanation:
    ランダム
 ========================= */
 
-function random(arr){
+function rand(max){
 
   return Math.floor(
-    Math.random()*arr.length
+    Math.random()*max
   );
 
 }
 
-function randomAmount(){
+function amount(){
 
   return Math.floor(
-    Math.random()*900+100
+    (Math.random()*900+100)
   ) * 1000;
 
 }
@@ -265,163 +320,184 @@ function randomAmount(){
    問題生成
 ========================= */
 
-function generateQuestions(num){
+const questions = [];
 
-  const result = [];
+for(let i=0;i<5;i++){
 
-  for(let i=0;i<num;i++){
+  const t =
+  templates[
+    rand(templates.length)
+  ];
 
-    const t =
-    templates[
-      random(templates)
-    ];
+  const a = amount();
 
-    const a = randomAmount();
-    const b = randomAmount();
+  const b =
+  Math.floor(a*0.7);
 
-    const method =
-    methods[
-      random(methods)
-    ];
+  questions.push({
 
-    let text = "";
+    text:t.text(a,b),
 
-    if(t.type === "single"){
+    debitAccounts:
+    t.debitAccounts,
 
-      text = t.text(a,method);
+    debitAmounts:
+    t.debitAmounts(a,b),
 
-    }else{
+    creditAccounts:
+    t.creditAccounts,
 
-      text = t.text(a,b);
+    creditAmounts:
+    t.creditAmounts(a,b),
 
-    }
+    explanation:
+    t.explanation
 
-    result.push({
+  });
 
-      text:text,
+}
 
-      debits:t.debits(method),
+/* =========================
+   必須勘定抽出
+========================= */
 
-      credits:t.credits,
+let required = [];
 
-      explanation:t.explanation,
+questions.forEach(q=>{
 
-      category:t.category
+  required.push(
+    ...q.debitAccounts
+  );
 
-    });
+  required.push(
+    ...q.creditAccounts
+  );
+
+});
+
+required =
+[...new Set(required)];
+
+/* =========================
+   24科目までランダム追加
+========================= */
+
+while(required.length < 24){
+
+  const r =
+  accounts[
+    rand(accounts.length)
+  ];
+
+  if(!required.includes(r)){
+
+    required.push(r);
 
   }
 
-  return result;
-
 }
 
 /* =========================
-   出題
+   シャッフル
 ========================= */
 
-const selected =
-
-wrongQuestions.length >= 10
-
-? wrongQuestions.slice(0,10)
-
-: generateQuestions(10);
+required.sort(
+()=>Math.random()-0.5
+);
 
 /* =========================
-   検索付きセレクト
+   A〜X割当
 ========================= */
 
-function createSelect(id){
+const letters =
+"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+.split("");
 
-  return `
+const mapping = {};
 
-  <input
-  type="text"
-  class="search-box"
-  placeholder="勘定科目検索"
-  onkeyup="filterOptions('${id}',this.value)"
-  >
+required.forEach((a,i)=>{
 
-  <select id="${id}">
+  mapping[
+    letters[i]
+  ] = a;
 
-    <option value="">
-    選択してください
-    </option>
+});
 
-    ${accounts.map(a=>
-    `<option>${a}</option>`
-    ).join("")}
+/* =========================
+   勘定科目表示
+========================= */
 
-  </select>
+const list =
+document.getElementById(
+"account-list"
+);
+
+required.forEach((a,i)=>{
+
+  list.innerHTML += `
+
+  <div class="account-item">
+
+    <b>${letters[i]}</b>
+
+    ${a}
+
+  </div>
 
   `;
 
-}
+});
 
 /* =========================
-   表示
+   問題表示
 ========================= */
 
 const quiz =
-document.getElementById("quiz");
+document.getElementById(
+"quiz"
+);
 
-selected.forEach((q,i)=>{
+questions.forEach((q,i)=>{
 
   quiz.innerHTML += `
 
   <div class="q">
 
-    <h3>第${i+1}問</h3>
+    <h3>
+    第${i+1}問
+    </h3>
 
     <p>
-
-      次の取引について
-      最も適当な勘定科目を選択しなさい。
-
-      <br><br>
-
-      ${q.text}
-
+    ${q.text}
     </p>
 
-    <div class="journal-row">
+    <div class="answer-row">
 
-      <div class="journal-side">
+      <span>借方</span>
 
-        <label>借方①</label>
+      <input
+      type="text"
+      maxlength="1"
+      id="d${i}"
+      >
 
-        ${createSelect(`d1-${i}`)}
+      <input
+      type="number"
+      id="da${i}"
+      >
 
-      </div>
+      <span>貸方</span>
 
-      <div class="journal-side">
+      <input
+      type="text"
+      maxlength="1"
+      id="c${i}"
+      >
 
-        <label>貸方①</label>
-
-        ${createSelect(`c1-${i}`)}
-
-      </div>
-
-    </div>
-
-    <div class="journal-row">
-
-      <div class="journal-side">
-
-        <label>借方②</label>
-
-        ${createSelect(`d2-${i}`)}
-
-      </div>
-
-      <div class="journal-side">
-
-        <label>貸方②</label>
-
-        ${createSelect(`c2-${i}`)}
-
-      </div>
+      <input
+      type="number"
+      id="ca${i}"
+      >
 
     </div>
 
@@ -434,37 +510,6 @@ selected.forEach((q,i)=>{
 });
 
 /* =========================
-   検索
-========================= */
-
-function filterOptions(id,keyword){
-
-  const select =
-  document.getElementById(id);
-
-  const lower =
-  keyword.toLowerCase();
-
-  select.innerHTML = `
-  <option value="">
-  選択してください
-  </option>
-  `;
-
-  accounts
-  .filter(a=>
-    a.toLowerCase().includes(lower)
-  )
-  .forEach(a=>{
-
-    select.innerHTML +=
-    `<option>${a}</option>`;
-
-  });
-
-}
-
-/* =========================
    採点
 ========================= */
 
@@ -472,66 +517,73 @@ function check(){
 
   let score = 0;
 
-  selected.forEach((q,i)=>{
+  questions.forEach((q,i)=>{
 
-    const d1 =
-    document.getElementById(`d1-${i}`).value;
+    const d =
+    document
+    .getElementById(`d${i}`)
+    .value
+    .toUpperCase();
 
-    const d2 =
-    document.getElementById(`d2-${i}`).value;
+    const c =
+    document
+    .getElementById(`c${i}`)
+    .value
+    .toUpperCase();
 
-    const c1 =
-    document.getElementById(`c1-${i}`).value;
+    const da =
+    Number(
+      document
+      .getElementById(`da${i}`)
+      .value
+    );
 
-    const c2 =
-    document.getElementById(`c2-${i}`).value;
-
-    const debitAnswers =
-    [d1,d2].filter(v=>v);
-
-    const creditAnswers =
-    [c1,c2].filter(v=>v);
+    const ca =
+    Number(
+      document
+      .getElementById(`ca${i}`)
+      .value
+    );
 
     const debitCorrect =
-    q.debits.every(v=>
-      debitAnswers.includes(v)
-    );
+
+    mapping[d]
+    ===
+    q.debitAccounts[0];
 
     const creditCorrect =
-    q.credits.every(v=>
-      creditAnswers.includes(v)
-    );
+
+    mapping[c]
+    ===
+    q.creditAccounts[0];
+
+    const amountCorrect =
+
+    da
+    ===
+    q.debitAmounts[0]
+
+    &&
+
+    ca
+    ===
+    q.creditAmounts[0];
 
     const correct =
-    debitCorrect &&
-    creditCorrect;
 
-    history.push({
-
-      question:q.text,
-
-      category:q.category,
-
-      correct:correct,
-
-      date:new Date()
-      .toLocaleString()
-
-    });
-
-    if(!correct){
-
-      wrongQuestions.push(q);
-
-    }
+    debitCorrect
+    &&
+    creditCorrect
+    &&
+    amountCorrect;
 
     if(correct){
 
       score++;
 
-      document.getElementById(
-        `r${i}`
-      ).innerHTML =
+      document
+      .getElementById(`r${i}`)
+      .innerHTML =
 
       `<div class="correct">
 
@@ -539,32 +591,56 @@ function check(){
 
       <br><br>
 
-      💡 解説<br>
       ${q.explanation}
 
       </div>`;
 
     }else{
 
-      document.getElementById(
-        `r${i}`
-      ).innerHTML =
+      const debitLetter =
+      Object.keys(mapping)
+      .find(
+      k=>
+      mapping[k]
+      ===
+      q.debitAccounts[0]
+      );
+
+      const creditLetter =
+      Object.keys(mapping)
+      .find(
+      k=>
+      mapping[k]
+      ===
+      q.creditAccounts[0]
+      );
+
+      document
+      .getElementById(`r${i}`)
+      .innerHTML =
 
       `<div class="wrong">
 
-      ❌ 正解<br><br>
+      ❌ 不正解
+
+      <br><br>
 
       借方：
-      ${q.debits.join(" ・ ")}
+      ${debitLetter}
+      /
+      ${q.debitAmounts[0]
+      .toLocaleString()}
 
       <br><br>
 
       貸方：
-      ${q.credits.join(" ・ ")}
+      ${creditLetter}
+      /
+      ${q.creditAmounts[0]
+      .toLocaleString()}
 
       <br><br>
 
-      💡 解説<br>
       ${q.explanation}
 
       </div>`;
@@ -573,48 +649,12 @@ function check(){
 
   });
 
-  localStorage.setItem(
-    "history",
-    JSON.stringify(history)
-  );
+  document
+  .getElementById("score")
+  .innerHTML =
 
-  localStorage.setItem(
-    "wrongQuestions",
-    JSON.stringify(wrongQuestions)
-  );
-
-  const wrong =
-  history.filter(
-    h=>!h.correct
-  ).length;
-
-  const rate =
-  (
-    (
-      history.length - wrong
-    )
-    /
-    history.length
-    *100
-  ).toFixed(1);
-
-  document.getElementById(
-    "score"
-  ).innerHTML =
-
-  `
-  得点：${score}/${selected.length}
-
-  <hr>
-
-  履歴件数：
-  ${history.length}件
-
-  <br>
-
-  累計正答率：
-  ${rate}%
-  `;
+  `得点：
+  ${score}/5`;
 
 }
 
