@@ -1,3 +1,7 @@
+/* =========================
+   履歴
+========================= */
+
 let history = JSON.parse(
   localStorage.getItem("history")
 ) || [];
@@ -6,35 +10,126 @@ let wrongQuestions = JSON.parse(
   localStorage.getItem("wrongQuestions")
 ) || [];
 
-/* 勘定科目 */
+/* =========================
+   勘定科目
+========================= */
 
 const accounts = [
 
-  "現金",
-  "当座預金",
-  "普通預金",
-  "完成工事未収入金",
-  "未成工事支出金",
-  "未成工事受入金",
-  "完成工事高",
-  "完成工事原価",
-  "材料貯蔵品",
-  "工事未払金",
-  "買掛金",
-  "売掛金",
-  "受取手形",
-  "支払手形",
-  "減価償却費",
-  "機械装置",
-  "租税公課",
-  "通信費",
-  "旅費交通費",
-  "水道光熱費",
-  "消耗品費"
+"現金",
+"小口現金",
+"当座預金",
+"普通預金",
+"通知預金",
+"定期預金",
+"別段預金",
+"受取手形",
+"完成工事未収入金",
+"有価証券",
+"未成工事支出金",
+"材料",
+"貯蔵品",
+"前渡金",
+"貸付金",
+"手形貸付金",
+"前払保険料",
+"前払地代",
+"前払家賃",
+"前払利息",
+"未収家賃",
+"未収利息",
+"未収手数料",
+"営業外受取手形",
+"未収入金",
+"立替金",
+"仮払金",
+"仮払法人税等",
+"仮払消費税",
+"未収消費税",
+"貸倒引当金",
+"建物",
+"構築物",
+"機械装置",
+"船舶",
+"車両運搬具",
+"工具器具",
+"備品",
+"減価償却累計額",
+"土地",
+"建設仮勘定",
+"のれん",
+"特許権",
+"借地権",
+"実用新案権",
+"電話加入権",
+"施設利用権",
+"投資有価証券",
+"出資金",
+"長期貸付金",
+"破産債権、更生債権等",
+"不渡手形",
+"長期前払費用",
+"差入保証金",
+"差入有価証券",
+"株式交付費",
+"社債発行費",
+"支払手形",
+"工事未払金",
+"借入金",
+"手形借入金",
+"当座借越",
+"未払金",
+"未払地代",
+"未払家賃",
+"未払利息",
+"未払配当金",
+"未払法人税等",
+"未成工事受入金",
+"預り金",
+"前受家賃",
+"前受地代",
+"前受利息",
+"仮受金",
+"仮受消費税",
+"未払消費税",
+"賞与引当金",
+"修繕引当金",
+"完成工事補償引当金",
+"営業外支払手形",
+"社債",
+"長期借入金",
+"長期未払金",
+"退職給付引当金",
+"保証債務",
+"資本金",
+"受取利息",
+"完成工事高",
+"受取配当金",
+"雑収入",
+"完成工事原価",
+"給料手当",
+"法定福利費",
+"福利厚生費",
+"通信費",
+"旅費交通費",
+"水道光熱費",
+"交際費",
+"支払家賃",
+"減価償却費",
+"租税公課",
+"保険料",
+"雑費",
+"支払利息",
+"材料費",
+"労務費",
+"外注費",
+"経費"
 
 ];
 
-/* AI単語 */
+/* =========================
+   AI用単語
+========================= */
 
 const subjects = [
   "完成工事代金",
@@ -54,146 +149,101 @@ const materials = [
   "工事現場で使用する材料"
 ];
 
-/* テンプレ */
+/* =========================
+   問題テンプレ
+========================= */
 
 const templates = [
 
-/* 単一仕訳 */
-
 {
 
-  category:"収益",
+category:"収益",
 
-  type:"single",
+type:"single",
 
-  text:(a,m)=>
-  `${subjects[random(subjects)]} ${a.toLocaleString()}円 を ${m} で受け取った。`,
+text:(a,m)=>
+`${subjects[random(subjects)]}
+${a.toLocaleString()}円 を
+${m} で受け取った。`,
 
-  debits:(m)=>[m],
+debits:(m)=>[m],
 
-  credits:["完成工事高"],
+credits:["完成工事高"],
 
-  explanation:
-  "完成工事代金を受け取ったため、貸方は完成工事高となる。"
+explanation:
+"完成工事代金を受け取ったため収益計上する。"
 
 },
 
 {
 
-  category:"材料",
+category:"材料",
 
-  type:"single",
+type:"single",
 
-  text:(a)=>
-  `${materials[random(materials)]} ${a.toLocaleString()}円 を掛けで購入した。`,
+text:(a)=>
+`${materials[random(materials)]}
+${a.toLocaleString()}円 を
+掛けで購入した。`,
 
-  debits:()=>["材料貯蔵品"],
+debits:()=>["材料"],
 
-  credits:["買掛金"],
+credits:["工事未払金"],
 
-  explanation:
-  "材料を掛けで購入したため買掛金が発生する。"
-
-},
-
-{
-
-  category:"進行基準",
-
-  type:"single",
-
-  text:(a)=>
-  `工事進行基準により ${a.toLocaleString()}円 の収益を計上した。`,
-
-  debits:()=>["完成工事未収入金"],
-
-  credits:["完成工事高"],
-
-  explanation:
-  "工事進行基準では進捗に応じて収益計上する。"
+explanation:
+"掛け購入のため工事未払金が発生する。"
 
 },
 
 {
 
-  category:"原価",
+category:"進行基準",
 
-  type:"single",
+type:"single",
 
-  text:(a)=>
-  `完成工事に対応する工事原価 ${a.toLocaleString()}円 を振り替えた。`,
+text:(a)=>
+`工事進行基準により
+${a.toLocaleString()}円 の
+収益を計上した。`,
 
-  debits:()=>["完成工事原価"],
+debits:()=>["完成工事未収入金"],
 
-  credits:["未成工事支出金"],
+credits:["完成工事高"],
 
-  explanation:
-  "完成した工事に対応する原価を費用化する。"
-
-},
-
-/* 複合仕訳 */
-
-{
-
-  category:"複合",
-
-  type:"multi",
-
-  text:(a,b)=>
-  `${materials[random(materials)]} ${a.toLocaleString()}円 を掛けで購入し、
-  運搬費 ${b.toLocaleString()}円 を現金で支払った。`,
-
-  debits:()=>["材料貯蔵品","通信費"],
-
-  credits:["買掛金","現金"],
-
-  explanation:
-  "材料購入と運搬費支払を同時に処理する複合仕訳。"
+explanation:
+"工事進行基準では進捗に応じて収益計上する。"
 
 },
 
 {
 
-  category:"複合",
+category:"複合",
 
-  type:"multi",
+type:"multi",
 
-  text:(a,b)=>
-  `工事未払金 ${a.toLocaleString()}円 を当座預金で支払い、
-  手数料 ${b.toLocaleString()}円 を現金で支払った。`,
+text:(a,b)=>
+`${materials[random(materials)]}
+${a.toLocaleString()}円 を
+掛けで購入し、
 
-  debits:()=>["工事未払金","通信費"],
+運搬費
+${b.toLocaleString()}円 を
+現金で支払った。`,
 
-  credits:["当座預金","現金"],
+debits:()=>["材料","通信費"],
 
-  explanation:
-  "工事未払金支払と手数料支払を同時処理する。"
+credits:["工事未払金","現金"],
 
-},
-
-{
-
-  category:"複合",
-
-  type:"multi",
-
-  text:(a,b)=>
-  `工事用消耗品 ${a.toLocaleString()}円 を現金で購入し、
-  水道光熱費 ${b.toLocaleString()}円 を普通預金から支払った。`,
-
-  debits:()=>["消耗品費","水道光熱費"],
-
-  credits:["現金","普通預金"],
-
-  explanation:
-  "複数費用を同時に処理する複合仕訳。"
+explanation:
+"材料購入と運搬費支払を同時に処理する複合仕訳。"
 
 }
 
 ];
 
-/* ランダム */
+/* =========================
+   ランダム
+========================= */
 
 function random(arr){
 
@@ -211,7 +261,9 @@ function randomAmount(){
 
 }
 
-/* 問題生成 */
+/* =========================
+   問題生成
+========================= */
 
 function generateQuestions(num){
 
@@ -264,7 +316,9 @@ function generateQuestions(num){
 
 }
 
-/* 出題 */
+/* =========================
+   出題
+========================= */
 
 const selected =
 
@@ -274,7 +328,40 @@ wrongQuestions.length >= 10
 
 : generateQuestions(10);
 
-/* 表示 */
+/* =========================
+   検索付きセレクト
+========================= */
+
+function createSelect(id){
+
+  return `
+
+  <input
+  type="text"
+  class="search-box"
+  placeholder="勘定科目検索"
+  onkeyup="filterOptions('${id}',this.value)"
+  >
+
+  <select id="${id}">
+
+    <option value="">
+    選択してください
+    </option>
+
+    ${accounts.map(a=>
+    `<option>${a}</option>`
+    ).join("")}
+
+  </select>
+
+  `;
+
+}
+
+/* =========================
+   表示
+========================= */
 
 const quiz =
 document.getElementById("quiz");
@@ -304,17 +391,7 @@ selected.forEach((q,i)=>{
 
         <label>借方①</label>
 
-        <select id="d1-${i}">
-
-          <option value="">
-          選択してください
-          </option>
-
-          ${accounts.map(a=>
-          `<option>${a}</option>`
-          ).join("")}
-
-        </select>
+        ${createSelect(`d1-${i}`)}
 
       </div>
 
@@ -322,17 +399,7 @@ selected.forEach((q,i)=>{
 
         <label>貸方①</label>
 
-        <select id="c1-${i}">
-
-          <option value="">
-          選択してください
-          </option>
-
-          ${accounts.map(a=>
-          `<option>${a}</option>`
-          ).join("")}
-
-        </select>
+        ${createSelect(`c1-${i}`)}
 
       </div>
 
@@ -344,17 +411,7 @@ selected.forEach((q,i)=>{
 
         <label>借方②</label>
 
-        <select id="d2-${i}">
-
-          <option value="">
-          選択してください
-          </option>
-
-          ${accounts.map(a=>
-          `<option>${a}</option>`
-          ).join("")}
-
-        </select>
+        ${createSelect(`d2-${i}`)}
 
       </div>
 
@@ -362,17 +419,7 @@ selected.forEach((q,i)=>{
 
         <label>貸方②</label>
 
-        <select id="c2-${i}">
-
-          <option value="">
-          選択してください
-          </option>
-
-          ${accounts.map(a=>
-          `<option>${a}</option>`
-          ).join("")}
-
-        </select>
+        ${createSelect(`c2-${i}`)}
 
       </div>
 
@@ -386,7 +433,40 @@ selected.forEach((q,i)=>{
 
 });
 
-/* 採点 */
+/* =========================
+   検索
+========================= */
+
+function filterOptions(id,keyword){
+
+  const select =
+  document.getElementById(id);
+
+  const lower =
+  keyword.toLowerCase();
+
+  select.innerHTML = `
+  <option value="">
+  選択してください
+  </option>
+  `;
+
+  accounts
+  .filter(a=>
+    a.toLowerCase().includes(lower)
+  )
+  .forEach(a=>{
+
+    select.innerHTML +=
+    `<option>${a}</option>`;
+
+  });
+
+}
+
+/* =========================
+   採点
+========================= */
 
 function check(){
 
@@ -426,8 +506,6 @@ function check(){
     debitCorrect &&
     creditCorrect;
 
-    /* 履歴 */
-
     history.push({
 
       question:q.text,
@@ -440,8 +518,6 @@ function check(){
       .toLocaleString()
 
     });
-
-    /* 苦手保存 */
 
     if(!correct){
 
@@ -497,8 +573,6 @@ function check(){
 
   });
 
-  /* 保存 */
-
   localStorage.setItem(
     "history",
     JSON.stringify(history)
@@ -508,8 +582,6 @@ function check(){
     "wrongQuestions",
     JSON.stringify(wrongQuestions)
   );
-
-  /* 正答率 */
 
   const wrong =
   history.filter(
@@ -525,52 +597,6 @@ function check(){
     history.length
     *100
   ).toFixed(1);
-
-  /* 苦手分析 */
-
-  const categories = {};
-
-  history.forEach(h=>{
-
-    if(!categories[h.category]){
-
-      categories[h.category] = {
-        total:0,
-        correct:0
-      };
-
-    }
-
-    categories[h.category].total++;
-
-    if(h.correct){
-
-      categories[h.category].correct++;
-
-    }
-
-  });
-
-  let analysis = "";
-
-  for(let key in categories){
-
-    const c = categories[key];
-
-    const r =
-    (
-      c.correct
-      /
-      c.total
-      *100
-    ).toFixed(1);
-
-    analysis += `
-    ${key}：
-    ${r}%<br>
-    `;
-
-  }
 
   document.getElementById(
     "score"
@@ -588,17 +614,13 @@ function check(){
 
   累計正答率：
   ${rate}%
-
-  <hr>
-
-  <h3>苦手分析</h3>
-
-  ${analysis}
   `;
 
 }
 
-/* 次の問題 */
+/* =========================
+   次の問題
+========================= */
 
 function nextQuiz(){
 
